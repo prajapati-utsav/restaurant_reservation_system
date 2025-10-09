@@ -72,7 +72,7 @@ async def get_customer(customer_id: int, db: Session = Depends(get_db)):
 
 # Update customer
 @router.put("/{customer_id}")
-async def put_customer(customer_id: int, updated_customer: CustomerCreate, db: Session = Depends(get_db)):
+async def put_customer(customer_id: int, updated_customer: CustomerUpdate, db: Session = Depends(get_db)):
     try:
         customer = db.query(CustomerModel).filter(CustomerModel.id == customer_id).first()
         if not customer:

@@ -6,8 +6,6 @@ from enum import Enum
 class TableLocation(str, Enum):
     WINDOW = "Window"
     CENTER = "Center"
-    PRIVATE_ROOM = "Private Room"
-    BAR_AREA = "Bar Area"
     OUTDOOR = "Outdoor"
 
 class TableStatus(str, Enum):
@@ -29,7 +27,6 @@ class ReservationStatus(str, Enum):
     SEATED = "Seated"
     COMPLETED = "Completed"
     CANCELLED = "Cancelled"
-    NO_SHOW = "No-Show"
 
 # ----------------------
 # Table Schemas
@@ -93,25 +90,13 @@ class MergeTablesRequest(BaseModel):
 # Customer Schemas
 # ----------------------
 class CustomerBase(BaseModel):
-    first_name: str
-    last_name: str
-    phone_number: str
+    first_name: Optional[str]
+    last_name: Optional[str]
+    phone_number: Optional[str]
     email: Optional[str] = None
     preferences: Optional[str] = ""
     dietary_requirements: Optional[str] = ""
     special_notes: Optional[str] = None
-
-    @field_validator("first_name", "last_name")
-    def name_required(cls, v):
-        if not v or not v.strip():
-            raise ValueError("Name cannot be empty")
-        return v
-
-    @field_validator("phone_number")
-    def phone_required(cls, v):
-        if not v or not v.strip():
-            raise ValueError("Phone number is required")
-        return v
 
     class Config:
         json_schema_extra = {
@@ -127,16 +112,33 @@ class CustomerBase(BaseModel):
         }
 
 class CustomerCreate(CustomerBase):
-    pass
+    first_name: str
+    last_name: str
+    phone_number: str
+
+    @field_validator("first_name", "last_name")
+    def name_required(cls, v):
+        if not v or not v.strip():
+            raise ValueError("Name cannot be empty")
+        return v
+
+    @field_validator("phone_number")
+    def phone_required(cls, v):
+        if not v or not v.strip():
+            raise ValueError("Phone number is required")
+        return v
 
 class CustomerUpdate(BaseModel):
-    first_name: Optional[str]
-    last_name: Optional[str]
-    phone_number: Optional[str]
-    email: Optional[str]
-    preferences: Optional[str]
-    dietary_requirements: Optional[str]
-    special_notes: Optional[str]
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    phone_number: Optional[str] = None
+    email: Optional[str] = None
+    preferences: Optional[str] = None
+    dietary_requirements: Optional[str] = None
+    special_notes: Optional[str] = None
+
+    class Config:
+        from_attributes = True
 
 class Customer(CustomerBase):
     id: int

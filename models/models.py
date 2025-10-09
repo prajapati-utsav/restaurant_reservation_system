@@ -23,13 +23,6 @@ class CustomerPreference(str, enum.Enum):
     BOOTH = "Booth"
     NEAR_KITCHEN = "Near Kitchen"
 
-class DietaryRequirement(str, enum.Enum):
-    VEGETARIAN = "Vegetarian"
-    VEGAN = "Vegan"
-    GLUTEN_FREE = "Gluten-Free"
-    DAIRY_FREE = "Dairy-Free"
-    NUT_ALLERGY = "Nut Allergy"
-
 class ReservationStatus(str, enum.Enum):
     CONFIRMED = "Confirmed"
     PENDING = "Pending"

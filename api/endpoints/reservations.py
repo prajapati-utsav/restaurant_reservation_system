@@ -43,20 +43,26 @@ def check_table_availability(table_ids: List[int], res_date: datetime.date, res_
             raise HTTPException(status_code=400, detail=f"Table {table.table_number} is already booked at this time")
 
 
-def check_customer_conflicts(customer_id: int, res_date: datetime.date, res_time: time, duration_hours: int, db: Session):
-    conflict = (
+def check_customer_conflicts(customer_id: int, res_date: date, res_time: time, duration_hours: int, db: Session):
+    new_start = datetime.combine(res_date, res_time)
+    new_end = new_start + timedelta(hours=duration_hours)
+
+    reservations = (
         db.query(ReservationModel)
         .filter(
             ReservationModel.customer_id == customer_id,
             ReservationModel.reservation_date == res_date,
             ReservationModel.status.in_([ReservationStatus.CONFIRMED, ReservationStatus.SEATED]),
-            (ReservationModel.reservation_time <= res_time) & 
-            (res_time < (datetime.combine(res_date, ReservationModel.reservation_time) + timedelta(hours=ReservationModel.duration_hours)).time())
         )
-        .first()
+        .all()
     )
-    if conflict:
-        raise HTTPException(status_code=400, detail="Customer has a conflicting reservation")
+
+    for res in reservations:
+        existing_start = datetime.combine(res.reservation_date, res.reservation_time)
+        existing_end = existing_start + timedelta(hours=res.duration_hours)
+
+        if new_start < existing_end and existing_start < new_end:
+            raise HTTPException(status_code=400, detail="Customer has a conflicting reservation")
 
 
 # Create reservation
@@ -130,7 +136,7 @@ def update_reservation(reservation_id: int, update: ReservationUpdate, db: Sessi
     return {"message": "Reservation updated successfully", "data": ReservationSchema.from_orm(res)}
 
 
-# Delete reservation
+# Update Reservation Status
 @router.patch("/{reservation_id}/status")
 def update_reservation_status(reservation_id: int, status: ReservationStatus, db: Session = Depends(get_db)):
     res = db.query(ReservationModel).filter(ReservationModel.id == reservation_id).first()
